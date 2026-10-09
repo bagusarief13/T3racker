@@ -38,4 +38,5 @@ next-env.d.ts
 *.db
 *.db-journal
 dev.db
+*.bak
 .neon
