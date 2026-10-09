@@ -1,0 +1,106 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String            @id @default(cuid())
+  clerkId          String?           @unique
+  username         String            @unique
+  email            String            @unique
+  password         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  profile          Profile?
+  timesheets       TimesheetMonth[]
+  holidayOverrides HolidayOverride[]
+}
+
+model Profile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nama               String   @default("Bagus Arief Maulana")
+  npp                String   @default("901707")
+  staffId            String   @default("K-2514")
+  divisi             String   @default("RDL")
+  departemen         String   @default("REL")
+  kelompok           String   @default("CLD")
+  defaultProject     String   @default("Collection")
+  defaultProjectCode String   @default("")
+  defaultAipFitur    String   @default("")
+  pemohonName        String   @default("Bagus Arief Maulana")
+  pemohonTitle       String   @default("Karyawan YBS")
+  diperiksaName      String   @default("Hermawan Tri Rosanja")
+  diperiksaTitle     String   @default("Team Leader")
+  disetujuiName      String   @default("Syaiful Effendi")
+  disetujuiTitle     String   @default("Dept Head")
+  location           String   @default("Jakarta")
+  vendor             String   @default("sdd")
+  standardCheckIn    String   @default("08:30")
+  standardCheckOut   String   @default("17:00")
+  estOvertimeStart      String   @default("17:00")
+  estOvertimeEnd        String   @default("20:00")
+  hasSeenGettingStarted Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model TimesheetMonth {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year      Int
+  month     Int
+  notes     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  days      TimesheetDay[]
+
+  @@unique([userId, year, month])
+}
+
+model TimesheetDay {
+  id               String         @id @default(cuid())
+  timesheetMonthId String
+  timesheetMonth   TimesheetMonth @relation(fields: [timesheetMonthId], references: [id], onDelete: Cascade)
+  day              Int
+  dateStr          String
+  dayName          String
+  isWeekend        Boolean        @default(false)
+  isHoliday        Boolean        @default(false)
+  holidayName      String?
+  jamMasuk         String?
+  jamPulang        String?
+  totalJamKerja    String?
+  totalMinutes     Int?           @default(0)
+  statusKehadiran  String?        @default("")
+  isLembur         Boolean        @default(false)
+  project          String?
+  projectCode      String?
+  aipFitur         String?
+  kegiatan         String?
+  overtimeNotes    String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([timesheetMonthId, day])
+}
+
+model HolidayOverride {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateStr   String
+  name      String
+  isHoliday Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dateStr])
+}
